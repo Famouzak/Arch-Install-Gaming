@@ -80,3 +80,57 @@ mount /dev/sda1 /mnt/mnt/wdblue
 
 # Verify mounts
 findmnt -R /mnt
+
+reflector \
+  --country Indonesia,Singapore \
+  --protocol https \
+  --latest 10 \
+  --download-timeout 10 \
+  --sort rate \
+  --save /etc/pacman.d/mirrorlist
+
+pacstrap -K /mnt \
+  base \
+  base-devel \
+  linux \
+  linux-headers \
+  linux-zen \
+  linux-zen-headers \
+  linux-firmware \
+  amd-ucode \
+  btrfs-progs \
+  neovim \
+  git \
+  nano \
+  networkmanager \
+  sudo \
+  reflector
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# Inspect generated fstab
+nano /mnt/etc/fstab
+
+# Enter installed system
+arch-chroot /mnt
+
+# Set timezone
+ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+hwclock --systohc
+
+# Edit locale configuration
+nano /etc/locale.gen
+
+(Uncomment #en_US.UTF-8 UTF-8)
+
+# Generate locale
+locale-gen
+
+# Set system language
+nano /etc/locale.conf
+(LANG=en_US.UTF-8)
+
+# Set Hostname
+nano /etc/hostname
+(archlinux)
+(
