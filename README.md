@@ -133,4 +133,198 @@ nano /etc/locale.conf
 # Set Hostname
 nano /etc/hostname
 (archlinux)
-(
+
+# Create User Name
+useradd -m -G wheel -s /bin/bash famouzak
+
+# Set user password
+passwd famouzak
+
+# Set root password
+passwd
+
+# EDITOR=nano visudo
+(uncomment # %wheel ALL=(ALL:ALL) ALL)
+
+# Pacman Configuration (Enable Multilib, Color, IloveCandy)
+
+nano /etc/pacman.conf (Uncomment Below or Add)
+
+ParallelDownloads = 10
+#Color
+ILoveCandy
+#[multilib]
+#Include = /etc/pacman.d/mirrorlist
+
+pacman -Syu (Update Repository)
+
+# Install Package ( Mesa, Audio, KDE Plasma)
+
+pacman -S --needed \
+  git networkmanager pacman-contrib \
+  mesa lib32-mesa \
+  vulkan-radeon lib32-vulkan-radeon \
+  libva-mesa-driver lib32-libva-mesa-driver \
+  lib32-vulkan-icd-loader vulkan-icd-loader vulkan-tools \
+  pipewire pipewire-pulse pipewire-alsa pipewire-jack \
+  wireplumber pavucontrol easyeffects \
+  lsp-plugins-lv2 calf alsa-utils \
+  alacritty plasma-meta \
+  gwenview okular konsole dolphin kdeconnect kdenlive \
+  sddm wayland egl-wayland xdg-user-dirs \
+  qt6-base qt6-declarative qt6-svg
+
+# Clone SDDM Elegant
+git clone https://github.com/sniper1720/elegant-sddm-archlinux-theme.git /tmp/elegant-sddm
+
+mkdir -p /usr/share/sddm/themes/
+
+cp -r /tmp/elegant-sddm/elegant-archlinux /usr/share/sddm/themes/
+
+rm -rf /tmp/elegant-sddm
+
+# Make Config File
+mkdir -p /etc/sddm.conf.d
+nano /etc/sddm.conf.d/theme.conf 
+([Theme]
+Current=elegant-archlinux)
+
+# Install GRUB
+pacman -S --needed \
+  grub efibootmgr grub-btrfs snapper snap-pac \
+  inotify-tools os-prober
+
+# Customise GRUB (Use Hyprfluent Theme)
+mkdir -p /boot/grub/themes
+
+git clone --depth=1 \
+  https://github.com/Coopydood/HyperFluent-GRUB-Theme.git \
+  /tmp/hyperfluent-grub
+
+cp -r /tmp/hyperfluent-grub/arch \
+  /boot/grub/themes/HyperFluent
+
+rm -rf /tmp/hyperfluent-grub
+
+# Configure GRUB
+nano /etc/default/grub
+
+GRUB_TIMEOUT=3
+GRUB_GFXMODE=1920x1080x32,auto
+GRUB_DISABLE_SUBMENU=y
+GRUB_TERMINAL_OUTPUT="gfxterm"
+GRUB_THEME="/boot/grub/themes/HyperFluent/theme.txt"
+GRUB_TOP_LEVEL="/boot/vmlinuz-linux-zen"
+
+# Configure mkinitcpio
+nano /etc/mkinitcpio.conf
+MODULES=(btrfs amdgpu)
+
+mkinitcpio -P
+
+# INSTALL GRUB
+grub-install \
+  --target=x86_64-efi \
+  --efi-directory=/boot/efi \
+  --bootloader-id=GRUB \
+  --removable
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+# Activate Services
+
+systemctl enable NetworkManager
+systemctl enable sddm
+systemctl enable grub-btrfsd
+
+exit
+umount -R /mnt
+reboot
+
+# POST INSTALL SETUP (AFTER LOGIN TO KDE PLASMA)
+
+# Snapshot Configuration
+# Unmount the existing @snapshots subvolume
+sudo umount /.snapshots
+
+# Remove the now-empty mountpoint directory
+sudo rmdir /.snapshots
+
+# Create Snapper configuration for root
+sudo snapper -c root create-config /
+
+# Remove the .snapshots subvolume created by Snapper
+sudo btrfs subvolume delete /.snapshots
+
+# Recreate the mountpoint
+sudo mkdir /.snapshots
+
+# Mount the dedicated @snapshots subvolume from fstab
+sudo mount -a
+
+# Verify the mount
+findmnt /.snapshots
+
+# Give Permission to User
+sudo chmod 750 /.snapshots
+sudo chown :wheel /.snapshots
+
+sudo snapper -c root set-config \
+  ALLOW_USERS=famouzak \
+  SYNC_USER=yes
+
+# Activate Snapper
+sudo systemctl enable --now snapper-timeline.timer
+sudo systemctl enable --now snapper-cleanup.timer
+
+# Check Snapper Status
+sudo snapper -c root list
+systemctl status snapper-timeline.timer
+systemctl status snapper-cleanup.timer
+
+# Install YAY
+git clone https://aur.archlinux.org/yay.git
+
+cd yay
+
+makepkg -si
+
+cd ..
+
+# Install Gaming & Multimedia
+
+sudo pacman -S --needed \
+  steam wine-staging winetricks \
+  gamemode lib32-gamemode gamescope \
+  mangohud lib32-mangohud goverlay lact \
+  obs-studio obs-studio-plugin-browser \
+  ffmpeg vlc mpv gstreamer \
+  gnutls lib32-gnutls giflib \
+  v4l2loopback-dkms v4l2loopback-utils \
+  flatpak
+
+# Add User to Acces Gamemode
+sudo usermod -aG gamemode famouzak
+
+# Verify after logout then login
+gamemoded -t
+
+# Activate LACT
+sudo systemctl enable --now lactd
+
+# Verifikasi dkms status
+dkms status
+
+# INSTALL AUR PACKAGE
+yay -S --needed \
+  brave-bin \
+  darkly-bin \
+  protonplus \
+  lib32-giflib
+
+# flatpak configuration
+flatpak remote-add --if-not-exists \
+  flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Install Sober (Roblox) flatpak
+flatpak install flathub org.vinegarhq.Sober
