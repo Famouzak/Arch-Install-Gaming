@@ -8,7 +8,7 @@ timedatectl set-ntp true
 
 # Cek daftar disk
 lsblk -f
-fdisk -l
+
 
 # 2. Partisi Disk NVMe (/dev/nvme0n1) menggunakan skema GPT
 sgdisk --zap-all /dev/nvme0n1
@@ -40,9 +40,13 @@ mount -o $BTRFS_OPTS,subvol=@ /dev/nvme0n1p3 /mnt
 mkdir -p /mnt/{boot/efi,home,.snapshots,var/log,var/cache/pacman/pkg,mnt/wdblue}
 
 mount -o $BTRFS_OPTS,subvol=@home /dev/nvme0n1p3 /mnt/home
+
 mount -o $BTRFS_OPTS,subvol=@snapshots /dev/nvme0n1p3 /mnt/.snapshots
+
 mount -o $BTRFS_OPTS,subvol=@var_log /dev/nvme0n1p3 /mnt/var/log
+
 mount -o $BTRFS_OPTS,subvol=@pkg /dev/nvme0n1p3 /mnt/var/cache/pacman/pkg
+
 mount /dev/nvme0n1p1 /mnt/boot/efi
 
 # 6. Mount Secondary Storage (HDD WD Blue /dev/sda1)
@@ -74,11 +78,7 @@ echo "archlinux" > /etc/hostname
 
 # Buat file /etc/hosts secara manual
 nano /etc/hosts
-# (Isi dengan:
-# 127.0.0.1   localhost
-# ::1         localhost
-# 127.0.0.1   archlinux.localdomain archlinux
-# )
+
 
 # 3. Pembuatan User & Akses Sudo
 useradd -m -G wheel,video,audio,storage,optical,input -s /bin/bash famouzak
