@@ -78,8 +78,6 @@ mount /dev/nvme0n1p1 /mnt/boot/efi
 # Mount secondary HDD
 mount /dev/sda1 /mnt/mnt/wdblue
 
-# Verify mounts
-findmnt -R /mnt
 
 reflector \
   --country Indonesia,Singapore \
