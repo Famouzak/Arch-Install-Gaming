@@ -85,7 +85,6 @@ reflector \
   --country Indonesia,Singapore \
   --protocol https \
   --latest 10 \
-  --download-timeout 10 \
   --sort rate \
   --save /etc/pacman.d/mirrorlist
 
