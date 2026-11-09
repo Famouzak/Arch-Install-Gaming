@@ -162,7 +162,6 @@ pacman -Syu (Update Repository)
 
 pacman -S --needed \
   git networkmanager pacman-contrib \
-  
   alacritty plasma-meta \
   gwenview okular konsole dolphin kdeconnect kdenlive \
   sddm wayland egl-wayland xdg-user-dirs \
