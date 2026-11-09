@@ -108,7 +108,6 @@ nano /mnt/etc/fstab
 
 
 # PHASE 2 ARCH-CHROOT
-
 # Enter the new chroot environment
 arch-chroot /mnt
 
@@ -123,14 +122,14 @@ nano /etc/locale.gen
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
-# 3. Configure hostname & hosts file
+# 3. Configure hostname & hosts file (Using 127.0.1.1 for hostname as per Arch Wiki)
 echo "archlinux" > /etc/hostname
 
 nano /etc/hosts
 # -> (Manually fill the hosts file:
 # 127.0.0.1   localhost
 # ::1         localhost
-# 127.0.0.1   archlinux.localdomain archlinux
+# 127.0.1.1   archlinux.localdomain archlinux
 # )
 
 # 4. Create user, password, & Sudo privileges
@@ -152,7 +151,8 @@ nano /etc/pacman.conf
 # Resynchronize repository database
 pacman -Syu
 
-# PHASE 3 INSTALLING PACKAGES
+
+# PHASE 3 INSTALL PACKAGES
 
 # 1. Install KDE Plasma desktop environment & supporting utilities
 pacman -S --needed \
@@ -162,10 +162,11 @@ pacman -S --needed \
   sddm wayland egl-wayland xdg-user-dirs \
   qt6-base qt6-declarative qt6-svg
 
-# 2. Install GRUB & snapshot tools (Snapper, Grub-Btrfs, etc.)
+# 2. Install GRUB & backup tools (Tanpa snap-pac dulu)
 pacman -S --needed \
-  grub efibootmgr grub-btrfs snapper snap-pac \
+  grub efibootmgr grub-btrfs snapper \
   inotify-tools os-prober
+
 
 # PHASE 4 SYSTEM CONFIGURATION
 
@@ -183,18 +184,7 @@ nano /etc/sddm.conf.d/theme.conf
 # )
 
 
-# === B. SNAPPER CONFIGURATION (BTRFS SNAPSHOTS) ===
-snapper -c root create-config /
-
-chmod 750 /.snapshots
-chown :wheel /.snapshots
-snapper -c root set-config ALLOW_USERS=famouzak SYNC_USER=yes
-
-systemctl enable snapper-timeline.timer
-systemctl enable snapper-cleanup.timer
-
-
-# === C. GRUB BOOTLOADER & HYPERFLUENT THEME CONFIGURATION ===
+# === B. GRUB BOOTLOADER & HYPERFLUENT THEME CONFIGURATION ===
 mkdir -p /boot/grub/themes
 git clone --depth=1 \
   https://github.com/Coopydood/HyperFluent-GRUB-Theme.git \
@@ -214,7 +204,7 @@ nano /etc/default/grub
 # )
 
 
-# === D. MKINITCPIO CONFIGURATION & GRUB INSTALLATION ===
+# === C. MKINITCPIO CONFIGURATION & GRUB INSTALLATION ===
 nano /etc/mkinitcpio.conf
 # -> (Find the MODULES=() line and change it to:
 # MODULES=(btrfs amdgpu)
@@ -232,7 +222,7 @@ grub-install \
 grub-mkconfig -o /boot/grub/grub.cfg
 
 
-# === E. ACTIVATE SYSTEMD SERVICES ===
+# === D. ACTIVATE SYSTEMD SERVICES ===
 systemctl enable NetworkManager
 systemctl enable sddm
 systemctl enable grub-btrfsd
@@ -242,15 +232,43 @@ exit
 umount -R /mnt
 reboot
 
-# PHASE 5 POST INSTALLATION (GAMING PACKAGE)
-# 1. Install Yay (AUR Helper)
+# POST INSTALL SETUP
+
+# === A. SETUP SNAPPER & SNAP-PAC (Aman setelah sistem aktif) ===
+# 1. Temporarily unmount and clear default snapper folder if needed
+sudo umount /.snapshots || true
+sudo rm -rf /.snapshots
+
+# 2. Create snapper configuration for root btrfs
+sudo snapper -c root create-config /
+
+# 3. Re-create proper subvolume mount configuration
+sudo btrfs subvolume delete /.snapshots
+sudo mkdir -p /.snapshots
+sudo mount -a
+
+# 4. Set permission & allow user access
+sudo chmod 750 /.snapshots
+sudo chown :wheel /.snapshots
+sudo snapper -c root set-config ALLOW_USERS=famouzak SYNC_USER=yes
+
+# 5. Enable snapper automation timers
+sudo systemctl enable --now snapper-timeline.timer
+sudo systemctl enable --now snapper-cleanup.timer
+
+# 6. Install snap-pac now that snapper configuration is fully ready
+sudo pacman -S --needed snap-pac
+
+
+# === B. INSTALL YAY (AUR HELPER) ===
 git clone https://aur.archlinux.org/yay.git /tmp/yay
 cd /tmp/yay
 makepkg -si --noconfirm
 cd ~
 rm -rf /tmp/yay
 
-# 2. Install gaming stack, multimedia, & AMD drivers (Official Repos)
+
+# === C. INSTALL GAMING, MULTIMEDIA & AMD DRIVERS ===
 sudo pacman -S --needed \
   mesa lib32-mesa \
   vulkan-radeon lib32-vulkan-radeon \
@@ -268,27 +286,29 @@ sudo pacman -S --needed \
   v4l2loopback-dkms v4l2loopback-utils \
   flatpak
 
-# 3. Configure Gamemode & verification
+# Configure Gamemode & verification
 sudo usermod -aG gamemode famouzak
 # (Logout then log back in, then test with command:)
 gamemoded -t
 
-# 4. Enable LACT service (AMD GPU Controller)
+# Enable LACT service (AMD GPU Controller)
 sudo systemctl enable --now lactd
 
-# 5. Check DKMS module status
+# Check DKMS module status
 dkms status
 
-# 6. Install applications from AUR using Yay
+
+# === D. INSTALL AUR PACKAGES ===
 yay -S --needed \
   brave-bin \
   darkly-bin \
   protonplus \
   lib32-giflib
 
-# 7. Configure Flatpak & install Sober (Roblox Client)
-flatpak remote-add --if-not-exists \
+
+# === E. FLATPAK CONFIGURATION (System-wide consistent with sudo) ===
+sudo flatpak remote-add --if-not-exists \
   flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-flatpak install flathub org.vinegarhq.Sober
+sudo flatpak install flathub org.vinegarhq.Sober
 
