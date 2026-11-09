@@ -162,13 +162,7 @@ pacman -Syu (Update Repository)
 
 pacman -S --needed \
   git networkmanager pacman-contrib \
-  mesa lib32-mesa \
-  vulkan-radeon lib32-vulkan-radeon \
-  libva-mesa-driver lib32-libva-mesa-driver \
-  lib32-vulkan-icd-loader vulkan-icd-loader vulkan-tools \
-  pipewire pipewire-pulse pipewire-alsa pipewire-jack \
-  wireplumber pavucontrol easyeffects \
-  lsp-plugins-lv2 calf alsa-utils \
+  
   alacritty plasma-meta \
   gwenview okular konsole dolphin kdeconnect kdenlive \
   sddm wayland egl-wayland xdg-user-dirs \
@@ -267,7 +261,13 @@ cd ..
 
 # Install Gaming & Multimedia
 
-sudo pacman -S --needed \
+sudo pacman -S --needed \ mesa lib32-mesa \
+  vulkan-radeon lib32-vulkan-radeon \
+  libva-mesa-driver lib32-libva-mesa-driver \
+  lib32-vulkan-icd-loader vulkan-icd-loader vulkan-tools \
+  pipewire pipewire-pulse pipewire-alsa pipewire-jack \
+  wireplumber pavucontrol easyeffects \
+  lsp-plugins-lv2 calf alsa-utils \
   steam wine-staging winetricks \
   gamemode lib32-gamemode gamescope \
   mangohud lib32-mangohud goverlay lact \
