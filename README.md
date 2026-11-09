@@ -194,6 +194,18 @@ pacman -S --needed \
   grub efibootmgr grub-btrfs snapper snap-pac \
   inotify-tools os-prober
 
+# Snapper Configuration
+snapper -c root create-config /
+
+# Set Permission
+chmod 750 /.snapshots
+chown :wheel /.snapshots
+snapper -c root set-config ALLOW_USERS=famouzak SYNC_USER=yes
+
+# Aktivate Snapper
+systemctl enable snapper-timeline.timer
+systemctl enable snapper-cleanup.timer
+
 # Customise GRUB (Use Hyprfluent Theme)
 mkdir -p /boot/grub/themes
 
@@ -243,46 +255,8 @@ reboot
 
 # POST INSTALL SETUP (AFTER LOGIN TO KDE PLASMA)
 
-# Snapshot Configuration
-# Unmount the existing @snapshots subvolume
-sudo umount /.snapshots
 
-# Remove the now-empty mountpoint directory
-sudo rmdir /.snapshots
-
-# Create Snapper configuration for root
-sudo snapper -c root create-config /
-
-# Remove the .snapshots subvolume created by Snapper
-sudo btrfs subvolume delete /.snapshots
-
-# Recreate the mountpoint
-sudo mkdir /.snapshots
-
-# Mount the dedicated @snapshots subvolume from fstab
-sudo mount -a
-
-# Verify the mount
-findmnt /.snapshots
-
-# Give Permission to User
-sudo chmod 750 /.snapshots
-sudo chown :wheel /.snapshots
-
-sudo snapper -c root set-config \
-  ALLOW_USERS=famouzak \
-  SYNC_USER=yes
-
-# Activate Snapper
-sudo systemctl enable --now snapper-timeline.timer
-sudo systemctl enable --now snapper-cleanup.timer
-
-# Check Snapper Status
-sudo snapper -c root list
-systemctl status snapper-timeline.timer
-systemctl status snapper-cleanup.timer
-
-# Install YAY
+# Install YAY (AUR HELPER)
 git clone https://aur.archlinux.org/yay.git
 
 cd yay
