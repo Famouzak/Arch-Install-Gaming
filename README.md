@@ -157,7 +157,7 @@ ILoveCandy
 
 pacman -Syu (Update Repository)
 
-# Install Package ( Mesa, Audio, KDE Plasma)
+# Install Package ( Sddm, KDE Plasma)
 
 pacman -S --needed \
   git networkmanager pacman-contrib \
@@ -165,6 +165,12 @@ pacman -S --needed \
   gwenview okular konsole dolphin kdeconnect kdenlive \
   sddm wayland egl-wayland xdg-user-dirs \
   qt6-base qt6-declarative qt6-svg
+
+
+# Install GRUB
+pacman -S --needed \
+  grub efibootmgr grub-btrfs snapper snap-pac \
+  inotify-tools os-prober
 
 # Clone SDDM Elegant
 git clone https://github.com/sniper1720/elegant-sddm-archlinux-theme.git /tmp/elegant-sddm
@@ -181,10 +187,6 @@ nano /etc/sddm.conf.d/theme.conf
 ([Theme]
 Current=elegant-archlinux)
 
-# Install GRUB
-pacman -S --needed \
-  grub efibootmgr grub-btrfs snapper snap-pac \
-  inotify-tools os-prober
 
 # Snapper Configuration
 snapper -c root create-config /
