@@ -242,3 +242,53 @@ exit
 umount -R /mnt
 reboot
 
+# PHASE 5 POST INSTALLATION (GAMING PACKAGE)
+# 1. Install Yay (AUR Helper)
+git clone https://aur.archlinux.org/yay.git /tmp/yay
+cd /tmp/yay
+makepkg -si --noconfirm
+cd ~
+rm -rf /tmp/yay
+
+# 2. Install gaming stack, multimedia, & AMD drivers (Official Repos)
+sudo pacman -S --needed \
+  mesa lib32-mesa \
+  vulkan-radeon lib32-vulkan-radeon \
+  libva-mesa-driver lib32-libva-mesa-driver \
+  lib32-vulkan-icd-loader vulkan-icd-loader vulkan-tools \
+  pipewire pipewire-pulse pipewire-alsa pipewire-jack \
+  wireplumber pavucontrol easyeffects \
+  lsp-plugins-lv2 calf alsa-utils \
+  steam wine-staging winetricks \
+  gamemode lib32-gamemode gamescope \
+  mangohud lib32-mangohud goverlay lact \
+  obs-studio obs-studio-plugin-browser \
+  ffmpeg vlc mpv gstreamer \
+  gnutls lib32-gnutls giflib \
+  v4l2loopback-dkms v4l2loopback-utils \
+  flatpak
+
+# 3. Configure Gamemode & verification
+sudo usermod -aG gamemode famouzak
+# (Logout then log back in, then test with command:)
+gamemoded -t
+
+# 4. Enable LACT service (AMD GPU Controller)
+sudo systemctl enable --now lactd
+
+# 5. Check DKMS module status
+dkms status
+
+# 6. Install applications from AUR using Yay
+yay -S --needed \
+  brave-bin \
+  darkly-bin \
+  protonplus \
+  lib32-giflib
+
+# 7. Configure Flatpak & install Sober (Roblox Client)
+flatpak remote-add --if-not-exists \
+  flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+flatpak install flathub org.vinegarhq.Sober
+
