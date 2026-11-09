@@ -14,7 +14,7 @@ lsblk -f
 # Wipe existing partition structures
 sgdisk --zap-all /dev/nvme0n1
 
-# Create GPT partition table
+# Create GPT partition table (Change nvme0n1 to your nvme)
 parted -s /dev/nvme0n1 mklabel gpt
 
 # Partition 1: EFI — 1 GiB
